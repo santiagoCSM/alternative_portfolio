@@ -2,6 +2,52 @@
   "use strict";
   const grid = document.querySelector("#project-grid");
   const buttons = [...document.querySelectorAll("[data-view]")];
+  const videoToggle = document.querySelector("#video-toggle");
+  const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const previewThreshold = 0.35;
+  const videos = [...grid.querySelectorAll("video")];
+  const visibleVideos = new Set();
+  let previewsEnabled = !motion.matches;
+
+  function updatePreviews() {
+    const enabled = previewsEnabled && !motion.matches;
+    const list = grid.classList.contains("list-mode");
+    videoToggle.hidden = list || motion.matches || !("IntersectionObserver" in window);
+    videoToggle.setAttribute("aria-pressed", String(enabled));
+    for (const video of videos) {
+      if (enabled && !list && !document.hidden && visibleVideos.has(video)) {
+        video.play().catch(() => {});
+      } else {
+        video.pause();
+      }
+    }
+  }
+
+  if ("IntersectionObserver" in window) {
+    const previewObserver = new IntersectionObserver(entries => {
+      for (const { target, intersectionRatio } of entries) {
+        if (intersectionRatio >= previewThreshold) visibleVideos.add(target);
+        else visibleVideos.delete(target);
+      }
+      updatePreviews();
+    }, { threshold: previewThreshold });
+    for (const video of videos) {
+      video.muted = true;
+      const visual = video.closest(".project-visual");
+      video.addEventListener("playing", () => visual.classList.add("is-playing"));
+      for (const event of ["pause", "waiting", "error"]) {
+        video.addEventListener(event, () => visual.classList.remove("is-playing"));
+      }
+      previewObserver.observe(video);
+    }
+    videoToggle.addEventListener("click", () => {
+      previewsEnabled = !previewsEnabled;
+      updatePreviews();
+    });
+    motion.addEventListener("change", updatePreviews);
+    document.addEventListener("visibilitychange", updatePreviews);
+  }
+  updatePreviews();
   function setView(view) {
     const list = view === "list";
     grid.classList.toggle("list-mode", list);
@@ -10,6 +56,7 @@
       button.classList.toggle("active", active);
       button.setAttribute("aria-pressed", String(active));
     }
+    updatePreviews();
   }
   buttons.forEach(button => button.addEventListener("click", () => setView(button.dataset.view)));
   const indexLinks = [...document.querySelectorAll(".work-index a")];
