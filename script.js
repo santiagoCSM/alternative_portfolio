@@ -12,6 +12,15 @@
     }
   }
   buttons.forEach(button => button.addEventListener("click", () => setView(button.dataset.view)));
+  const indexLinks = [...document.querySelectorAll(".work-index a")];
+  const updateCurrentProject = () => {
+    for (const link of indexLinks) {
+      if (link.hash === window.location.hash) link.setAttribute("aria-current", "location");
+      else link.removeAttribute("aria-current");
+    }
+  };
+  window.addEventListener("hashchange", updateCurrentProject);
+  updateCurrentProject();
   document.querySelector("#project-count").textContent = String(grid.querySelectorAll(".project").length).padStart(2, "0");
   document.querySelector("#year").textContent = new Date().getFullYear();
   const items = [...document.querySelectorAll(".reveal")];
