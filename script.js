@@ -24,29 +24,24 @@
     items.forEach(item => item.classList.add("visible"));
   }
 
-  // The longest headline line sets a safe common font size for the entire hero.
-  // Recompute after web fonts load and on resize so no word is clipped.
+  // Ajuste final según el ancho disponible: evita títulos recortados.
   const heroTitle = document.querySelector("#hero-title");
   if (heroTitle) {
     const fitHero = () => {
       heroTitle.style.removeProperty("font-size");
-      const baseSize = parseFloat(getComputedStyle(heroTitle).fontSize);
-      let ratio = 1;
-      for (const line of heroTitle.querySelectorAll(".hero-line")) {
-        const text = line.querySelector(".hero-line-inner");
-        if (!text) continue;
+      const base = parseFloat(getComputedStyle(heroTitle).fontSize);
+      const factors = [...heroTitle.querySelectorAll(".hero-line")].map(line => {
+        const inner = line.querySelector(".hero-line-inner");
         const style = getComputedStyle(line);
-        const available = line.clientWidth
-          - parseFloat(style.paddingLeft)
-          - parseFloat(style.paddingRight)
-          - 4;
-        const width = text.getBoundingClientRect().width;
-        if (width > 0 && available > 0) ratio = Math.min(ratio, available / width);
-      }
-      if (ratio < 1) heroTitle.style.fontSize = (baseSize * ratio * .98).toFixed(2) + "px";
+        const available = line.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight) - 4;
+        const actual = inner.getBoundingClientRect().width;
+        return actual > 0 ? Math.min(1, available / actual) : 1;
+      });
+      const factor = Math.min(...factors);
+      if (factor < 1) heroTitle.style.fontSize = (base * factor * .98).toFixed(2) + "px";
     };
     fitHero();
     window.addEventListener("resize", fitHero, { passive: true });
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitHero);
+    if (document.fonts?.ready) document.fonts.ready.then(fitHero);
   }
 })();
