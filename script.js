@@ -1,5 +1,28 @@
 (() => {
   "use strict";
+  const themeToggle = document.querySelector(".theme-toggle");
+  const themeColor = document.querySelector('meta[name="theme-color"]');
+  const systemTheme = window.matchMedia("(prefers-color-scheme: dark)");
+  const root = document.documentElement;
+  let savedTheme;
+  try { savedTheme = localStorage.getItem("portfolio-theme"); } catch {}
+
+  function applyTheme() {
+    const dark = savedTheme === "dark" || (savedTheme !== "light" && systemTheme.matches);
+    root.dataset.theme = dark ? "dark" : "light";
+    themeColor.content = getComputedStyle(root).getPropertyValue("--paper").trim();
+    themeToggle.setAttribute("aria-pressed", String(dark));
+  }
+
+  themeToggle.addEventListener("click", () => {
+    savedTheme = root.dataset.theme === "dark" ? "light" : "dark";
+    try { localStorage.setItem("portfolio-theme", savedTheme); } catch {}
+    applyTheme();
+  });
+  systemTheme.addEventListener("change", applyTheme);
+  applyTheme();
+  themeToggle.hidden = false;
+
   const grid = document.querySelector("#project-grid");
   const buttons = [...document.querySelectorAll("[data-view]")];
   const videoToggle = document.querySelector("#video-toggle");

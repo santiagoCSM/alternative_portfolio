@@ -6,6 +6,16 @@
   <meta name="theme-color" content="#f2f1ed" />
   <meta name="description" content="Portafolio de desarrollo web de Santiago. Proyectos de comercio electrónico, sitios corporativos y plataformas digitales." />
   <title>Santiago — Proyectos</title>
+  <script>
+    (() => {
+      let preference;
+      try { preference = localStorage.getItem("portfolio-theme"); } catch {}
+      const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      const dark = preference === "dark" || (preference !== "light" && systemDark);
+      document.documentElement.dataset.theme = dark ? "dark" : "light";
+      document.querySelector('meta[name="theme-color"]').content = dark ? "#161716" : "#f2f1ed";
+    })();
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
@@ -22,6 +32,7 @@
         <a href="#work">Proyectos <span>↗</span></a>
         <a href="#about">Sobre mí <span>↗</span></a>
         <a href="#contact">Contacto <span>↗</span></a>
+        <button type="button" class="theme-toggle" aria-label="Modo oscuro" aria-pressed="false" hidden>Oscuro</button>
       </nav>
     </header>
 
