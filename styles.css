@@ -84,3 +84,37 @@
   .hero-line-inner { animation: none !important; transform: none !important; will-change: auto; }
   .hero-meta, .hero-bottom, .hero .eyebrow, .hero-sub { animation: none !important; opacity: 1; }
 }
+
+
+/* Responsive title fit correction: every full word stays within the viewport. */
+.hero h1 {
+  font-size: clamp(44px, 11.1vw, 188px);
+  line-height: .98;
+  letter-spacing: -.085em;
+  max-width: 100%;
+}
+.hero-line {
+  width: 100%;
+  overflow: hidden;
+  padding-inline-end: 6px;
+  padding-block: .08em .12em;
+  margin-block: -.08em -.12em;
+  white-space: nowrap;
+}
+.hero-line-inner {
+  display: inline-block;
+  width: auto;
+  white-space: nowrap;
+}
+.hero-line-indented { padding-left: 12%; }
+@media (max-width: 650px) {
+  .hero h1 {
+    font-size: clamp(40px, 11vw, 72px);
+    line-height: 1.06;
+    letter-spacing: -.075em;
+  }
+  .hero-line-indented { padding-left: 7%; }
+}
+@media (max-width: 370px) {
+  .hero h1 { font-size: 10.8vw; }
+}
