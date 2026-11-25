@@ -1,5 +1,7 @@
 # Alternative Portfolio — Creative Developer Portfolio
 
+![Portada del portafolio de Santiago con el titular «Crear lo que sigue» sobre fondo marfil](docs/portada.webp)
+
 **An experimental, editorial-style portfolio exploring the intersection of software engineering, creative coding and digital research.** Inspired by the visual language of Obys Agency and built entirely with HTML, CSS and vanilla JavaScript.
 
 **Live site:** [santiagocsm.github.io/alternative_portfolio](https://santiagocsm.github.io/alternative_portfolio/)  
