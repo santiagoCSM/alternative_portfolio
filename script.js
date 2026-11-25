@@ -10,7 +10,7 @@
   function applyTheme() {
     const dark = savedTheme === "dark" || (savedTheme !== "light" && systemTheme.matches);
     root.dataset.theme = dark ? "dark" : "light";
-    themeColor.content = getComputedStyle(root).getPropertyValue("--paper").trim();
+    themeColor.content = dark ? "#161716" : "#f2f1ed";
     themeToggle.setAttribute("aria-pressed", String(dark));
   }
 
@@ -30,19 +30,22 @@
   const previewThreshold = 0.35;
   const videos = [...grid.querySelectorAll("video")];
   const visibleVideos = new Set();
-  let previewsEnabled = !motion.matches;
+  let previewsEnabled = true;
 
   function updatePreviews() {
     const enabled = previewsEnabled && !motion.matches;
     const list = grid.classList.contains("list-mode");
     videoToggle.hidden = list || motion.matches || !("IntersectionObserver" in window);
     videoToggle.setAttribute("aria-pressed", String(enabled));
+    const nextVideo = enabled && !list && !document.hidden
+      ? videos.find(video => visibleVideos.has(video) && !video.error)
+      : null;
     for (const video of videos) {
-      if (enabled && !list && !document.hidden && visibleVideos.has(video)) {
-        video.play().catch(() => {});
-      } else {
-        video.pause();
-      }
+      if (video !== nextVideo && !video.paused) video.pause();
+    }
+    if (nextVideo?.paused) {
+      if (!nextVideo.hasAttribute("src")) nextVideo.src = nextVideo.dataset.src;
+      nextVideo.play().catch(() => {});
     }
   }
 
@@ -58,7 +61,7 @@
       video.muted = true;
       const visual = video.closest(".project-visual");
       video.addEventListener("playing", () => visual.classList.add("is-playing"));
-      for (const event of ["pause", "waiting", "error"]) {
+      for (const event of ["pause", "error"]) {
         video.addEventListener(event, () => visual.classList.remove("is-playing"));
       }
       previewObserver.observe(video);
@@ -71,13 +74,22 @@
     document.addEventListener("visibilitychange", updatePreviews);
   }
   updatePreviews();
+
+  function cancelReveals() {
+    for (const animation of grid.getAnimations?.({ subtree: true }) ?? []) {
+      if (animation.id === "project-reveal") animation.cancel();
+    }
+  }
+  motion.addEventListener("change", () => {
+    if (motion.matches) cancelReveals();
+  });
+
   function setView(view) {
     const list = view === "list";
     grid.classList.toggle("list-mode", list);
+    if (list) cancelReveals();
     for (const button of buttons) {
-      const active = button.dataset.view === view;
-      button.classList.toggle("active", active);
-      button.setAttribute("aria-pressed", String(active));
+      button.setAttribute("aria-pressed", String(button.dataset.view === view));
     }
     updatePreviews();
   }
@@ -98,52 +110,33 @@
     const revealInset = 48;
     const observer = new IntersectionObserver(entries => {
       for (const { target, isIntersecting } of entries) {
-        if (!isIntersecting) continue;
+        if (!isIntersecting) {
+          target.classList.add("awaiting-reveal");
+          continue;
+        }
+        const wasPending = target.classList.contains("awaiting-reveal");
         target.classList.remove("awaiting-reveal");
         observer.unobserve(target);
-        if (!motion.matches && !grid.classList.contains("list-mode") && !target.matches(":target, :focus-within")) {
+        if (wasPending && !motion.matches && !grid.classList.contains("list-mode") && !target.matches(":target, :focus-within")) {
           target.querySelector(".project-visual").animate(
             [
               { opacity: 0, transform: "translateY(14px)" },
               { opacity: 1, transform: "none" }
             ],
-            { duration: 1150, easing: revealEasing }
+            { id: "project-reveal", duration: 1150, easing: revealEasing }
           );
           target.querySelector(".project-info").animate(
             [
               { opacity: 0, transform: "translateY(8px)" },
               { opacity: 1, transform: "none" }
             ],
-            { duration: 900, delay: 140, easing: revealEasing, fill: "backwards" }
+            { id: "project-reveal", duration: 900, delay: 140, easing: revealEasing, fill: "backwards" }
           );
         }
       }
     }, { rootMargin: `0px 0px -${revealInset}px` });
     for (const project of grid.querySelectorAll(".reveal")) {
-      if (project.getBoundingClientRect().top < window.innerHeight - revealInset) continue;
-      project.classList.add("awaiting-reveal");
       observer.observe(project);
     }
-  }
-
-  // Ajuste final según el ancho disponible: evita títulos recortados.
-  const heroTitle = document.querySelector("#hero-title");
-  if (heroTitle) {
-    const fitHero = () => {
-      heroTitle.style.removeProperty("font-size");
-      const base = parseFloat(getComputedStyle(heroTitle).fontSize);
-      const factors = [...heroTitle.querySelectorAll(".hero-line")].map(line => {
-        const inner = line.querySelector(".hero-line-inner");
-        const style = getComputedStyle(line);
-        const available = line.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight) - 4;
-        const actual = inner.getBoundingClientRect().width;
-        return actual > 0 ? Math.min(1, available / actual) : 1;
-      });
-      const factor = Math.min(...factors);
-      if (factor < 1) heroTitle.style.fontSize = (base * factor * .98).toFixed(2) + "px";
-    };
-    fitHero();
-    window.addEventListener("resize", fitHero, { passive: true });
-    if (document.fonts?.ready) document.fonts.ready.then(fitHero);
   }
 })();
