@@ -2,13 +2,13 @@
    Identidad editorial: marfil, negro y acento verde discreto. */
 @font-face {
   font-family: Inter;
-  src: url("./fonts/inter-latin.woff2") format("woff2");
+  src: url("./fonts/inter-latin.2a9518ff02.woff2") format("woff2");
   font-weight: 400 900;
   font-display: swap;
 }
 @font-face {
   font-family: "DM Mono";
-  src: url("./fonts/dm-mono-latin.woff2") format("woff2");
+  src: url("./fonts/dm-mono-latin.9750a99842.woff2") format("woff2");
   font-weight: 400;
   font-display: swap;
 }
@@ -117,9 +117,9 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
 .project-grid:not(.list-mode) .project:nth-child(even) { justify-self: end; }
 .project-visual { --media-padding: clamp(12px, 2vw, 30px); position: relative; display: block; overflow: hidden; background: #e0dfd8; isolation: isolate; }
 .project-grid:not(.list-mode) .project-visual { --media-top: 40px; }
-.project-visual :is(img, video) { display: block; width: 100%; padding: var(--media-padding); padding-top: var(--media-top, var(--media-padding)); object-fit: contain; }
-.project-visual img { height: auto; }
-.project-visual video { position: absolute; inset: 0; height: 100%; background: inherit; opacity: 0; pointer-events: none; transition: opacity .45s ease-in-out; }
+.project-visual :is(picture, video) { display: block; width: 100%; padding: var(--media-padding); padding-top: var(--media-top, var(--media-padding)); }
+.project-visual img { width: 100%; height: auto; aspect-ratio: var(--view-ratio, var(--frame-ratio)); object-fit: contain; }
+.project-visual video { position: absolute; inset: 0; height: 100%; background: inherit; object-fit: contain; opacity: 0; pointer-events: none; transition: opacity .45s ease-in-out; }
 .project-visual.is-playing video { opacity: 1; }
 .project:nth-child(4n + 1) .project-visual { background: #d6dcd3; }
 .project:nth-child(4n + 2) .project-visual { background: #e3dbcf; }
@@ -135,7 +135,8 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
 .project-grid.list-mode { display: block; }
 .list-mode .project { display: grid; grid-template-columns: minmax(135px, 220px) minmax(0, 1fr); align-items: center; gap: 20px; padding: 20px 0; border-bottom: 1px solid var(--rule); }
 .list-mode .project-visual { --media-padding: 8px; aspect-ratio: 2.1; }
-.list-mode .project-visual img { position: absolute; inset: 0; height: 100%; }
+.list-mode .project-visual picture { position: absolute; inset: 0; height: 100%; }
+.list-mode .project-visual img { height: 100%; }
 .list-mode .project-visual video { display: none; }
 .list-mode .project-info { border: 0; padding: 0; }
 .list-mode .project-info h3 { font-size: clamp(19px, 2vw, 28px); }
@@ -203,6 +204,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
   .work-index ol { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 14px; }
   .project-grid { row-gap: 54px; }
   .project-grid:not(.list-mode) .project:not(.project-large) { width: 100%; }
+  .project-grid:not(.list-mode) .project-visual { --view-ratio: 4 / 5; }
   .project-info { gap: 8px; }
   .list-mode .project { grid-template-columns: 110px minmax(0, 1fr); gap: 12px; padding: 15px 0; }
   .list-mode .project-info p, .list-mode .project-year { display: none; }

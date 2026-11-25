@@ -27,10 +27,19 @@
   const buttons = [...document.querySelectorAll("[data-view]")];
   const videoToggle = document.querySelector("#video-toggle");
   const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const mobilePreview = window.matchMedia("(max-width: 650px)");
   const previewThreshold = 0.35;
   const videos = [...grid.querySelectorAll("video")];
   const visibleVideos = new Set();
+  const failedWebm = new WeakSet();
   let previewsEnabled = true;
+
+  function sourceFor(video) {
+    if (!mobilePreview.matches) return video.dataset.src;
+    const webm = video.dataset.mobileWebm;
+    if (webm && !failedWebm.has(video) && video.canPlayType('video/webm; codecs="vp9"')) return webm;
+    return video.dataset.mobileSrc;
+  }
 
   function updatePreviews() {
     const enabled = previewsEnabled && !motion.matches;
@@ -38,14 +47,18 @@
     videoToggle.hidden = list || motion.matches || !("IntersectionObserver" in window);
     videoToggle.setAttribute("aria-pressed", String(enabled));
     const nextVideo = enabled && !list && !document.hidden
-      ? videos.find(video => visibleVideos.has(video) && !video.error)
+      ? videos.find(video => visibleVideos.has(video) && (!video.error || video.getAttribute("src") !== sourceFor(video)))
       : null;
     for (const video of videos) {
       if (video !== nextVideo && !video.paused) video.pause();
     }
-    if (nextVideo?.paused) {
-      if (!nextVideo.hasAttribute("src")) nextVideo.src = nextVideo.dataset.src;
-      nextVideo.play().catch(() => {});
+    if (nextVideo) {
+      const source = sourceFor(nextVideo);
+      if (nextVideo.getAttribute("src") !== source) {
+        nextVideo.closest(".project-visual").classList.remove("is-playing");
+        nextVideo.src = source;
+      }
+      if (nextVideo.paused) nextVideo.play().catch(() => {});
     }
   }
 
@@ -64,6 +77,13 @@
       for (const event of ["pause", "error"]) {
         video.addEventListener(event, () => visual.classList.remove("is-playing"));
       }
+      if (video.dataset.mobileWebm) {
+        video.addEventListener("error", () => {
+          if (video.getAttribute("src") !== video.dataset.mobileWebm) return;
+          failedWebm.add(video);
+          updatePreviews();
+        });
+      }
       previewObserver.observe(video);
     }
     videoToggle.addEventListener("click", () => {
@@ -71,6 +91,7 @@
       updatePreviews();
     });
     motion.addEventListener("change", updatePreviews);
+    mobilePreview.addEventListener("change", updatePreviews);
     document.addEventListener("visibilitychange", updatePreviews);
   }
   updatePreviews();

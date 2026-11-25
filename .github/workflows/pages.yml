@@ -30,7 +30,7 @@ jobs:
       - name: Prepare static site
         run: |
           mkdir -p _site
-          cp -R index.html styles.css script.js sitemap.xml img fonts _site/
+          cp -R index.html styles.css script.js sitemap.xml img fonts videos _site/
       - name: Upload site
         uses: actions/upload-pages-artifact@v4
         with:
