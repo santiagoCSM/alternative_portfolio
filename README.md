@@ -1,54 +1,90 @@
-# Alternative Portfolio
+# Alternative Portfolio — Creative Developer Portfolio
 
-Portafolio experimental de Santiago. **Primera iteración de diseño**, inspirada en el enfoque editorial, la tipografía de gran escala, las retículas y los movimientos sutiles de [Obys Agency](https://obys.agency/).
+**An experimental, editorial-style portfolio exploring the intersection of software engineering, creative coding and digital research.** Inspired by the visual language of Obys Agency and built entirely with HTML, CSS and vanilla JavaScript.
 
-Esta es una interpretación original para seguir iterando: **no es una copia del código, las imágenes, las fuentes propietarias o la identidad de Obys**.
+**Live site:** [santiagocsm.github.io/alternative_portfolio](https://santiagocsm.github.io/alternative_portfolio/)  
+**Source:** [github.com/santiagoCSM/alternative_portfolio](https://github.com/santiagoCSM/alternative_portfolio)
 
-## Qué incluye
+> Work in progress. The GitHub Pages URL is the intended deployment address; its public availability has not yet been verified.
 
-- Hero tipográfico, diseño monocromático y grilla editorial.
-- Archivo de proyectos con modos **Grid/List**.
-- Gráficos abstractos originales hechos con CSS (sin imágenes pesadas).
-- Secciones Work, About y Contact.
-- Animaciones progresivas con `IntersectionObserver`, accesibilidad básica y respeto a `prefers-reduced-motion`.
-- Diseño responsivo, sin frameworks ni bundler.
+## Español
 
-## Tecnologías
+Un portafolio personal alternativo que combina **diseño editorial, tipografía de gran formato y microinteracciones** para mostrar proyectos de software, investigación y experimentación digital. Es una interpretación original inspirada en la dirección visual de [Obys Agency](https://obys.agency/), no una copia de su código ni de sus recursos visuales.
 
-- HTML5
-- CSS3
-- JavaScript (vanilla)
-- Google Fonts: Inter, DM Mono (fallbacks del sistema)
+### Características
 
-## Archivos
+- Portada tipográfica con entrada escalonada de líneas y diseño adaptable.
+- Galería de proyectos con vistas de cuadrícula y lista.
+- Ilustraciones originales en CSS, sin imágenes pesadas.
+- Secciones de proyectos, presentación personal y contacto.
+- Animaciones al desplazarse, navegación semántica y compatibilidad con movimiento reducido.
+- Arquitectura ligera sin frameworks, herramientas de compilación ni dependencias JavaScript.
 
-```
-index.html
-styles.css
-script.js
-README.md
-```
+### Tecnologías
 
-## Probar en local
+HTML5 · CSS3 · JavaScript (Vanilla) · Inter · DM Mono
+
+### Ejecutar localmente
 
 ```bash
+git clone https://github.com/santiagoCSM/alternative_portfolio.git
+cd alternative_portfolio
 python3 -m http.server 4173
 ```
 
-Abre http://localhost:4173
+Abre `http://localhost:4173` en el navegador.
 
-GitHub Pages puede publicarse desde `main` → `/ (root)` en Settings → Pages.
+### Despliegue
 
-## Próximos cambios
+El proyecto está preparado para publicarse en GitHub Pages desde la rama `main`, directorio `/ (root)`.
 
-Contenido y casos reales, adaptación de colores/tipografías, overlays de proyectos, motion design y evaluación de rendimiento en móviles.
+**Sitio:** https://santiagocsm.github.io/alternative_portfolio/
+
+Si la publicación no está activa, ve a **Settings → Pages → Deploy from a branch → main → / (root)**.
+
+### Próximas iteraciones
+
+Capturas reales de proyectos, composiciones editoriales más asimétricas, páginas interiores de casos de estudio y mejoras de interacción y rendimiento.
 
 ---
 
 ## English
 
-An experimental developer portfolio inspired by Obys Agency's editorial direction: large typography, grids, whitespace and subtle motion. This is **an original, lightweight starting point**, not a reproduction of proprietary assets or source code.
+Alternative Portfolio is an experimental personal site combining **editorial layouts, oversized typography and subtle interaction design** to showcase engineering, research and creative development projects.
 
-Built with HTML, CSS and vanilla JavaScript. Includes responsive layouts, grid/list work browsing, CSS-only artwork, accessible navigation and reduced-motion support.
+This is an original design exploration inspired by [Obys Agency](https://obys.agency/). No proprietary assets or source code have been reproduced.
 
-Run locally with `python3 -m http.server 4173`; optionally deploy using GitHub Pages from `main`.
+### Features
+
+- Refined typography-led hero with staggered line-reveal animation.
+- Responsive project gallery with grid and list browsing modes.
+- Lightweight, original CSS artwork.
+- Work, About and Contact sections.
+- Scroll reveal effects, semantic navigation and reduced-motion support.
+- No JavaScript frameworks or build step.
+
+### Stack
+
+HTML5 · CSS3 · Vanilla JavaScript · Inter · DM Mono
+
+### Local development
+
+```bash
+git clone https://github.com/santiagoCSM/alternative_portfolio.git
+cd alternative_portfolio
+python3 -m http.server 4173
+```
+
+Open `http://localhost:4173`.
+
+### Deployment
+
+The repository is structured for GitHub Pages from the `main` branch and repository root.
+
+**Live site URL:** https://santiagocsm.github.io/alternative_portfolio/
+
+If GitHub Pages has not been enabled yet, select **Settings → Pages → Deploy from a branch → main → / (root)**.
+
+### Roadmap
+
+Real project imagery, more expressive editorial compositions, detailed case studies, and careful motion/performance improvements.
