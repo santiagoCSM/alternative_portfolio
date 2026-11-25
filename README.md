@@ -5,8 +5,6 @@
 **Live site:** [santiagocsm.github.io/alternative_portfolio](https://santiagocsm.github.io/alternative_portfolio/)  
 **Source:** [github.com/santiagoCSM/alternative_portfolio](https://github.com/santiagoCSM/alternative_portfolio)
 
-> Work in progress. The GitHub Pages URL is the intended deployment address; its public availability has not yet been verified.
-
 ## Español
 
 Un portafolio personal alternativo que combina **diseño editorial, tipografía de gran formato y microinteracciones** para mostrar proyectos de software, investigación y experimentación digital. Es una interpretación original inspirada en la dirección visual de [Obys Agency](https://obys.agency/), no una copia de su código ni de sus recursos visuales.
@@ -36,11 +34,11 @@ Abre `http://localhost:4173` en el navegador.
 
 ### Despliegue
 
-El proyecto está preparado para publicarse en GitHub Pages desde la rama `main`, directorio `/ (root)`.
+GitHub Actions publica el sitio en GitHub Pages con cada push a `main`. El workflow también se puede ejecutar manualmente.
 
 **Sitio:** https://santiagocsm.github.io/alternative_portfolio/
 
-Si la publicación no está activa, ve a **Settings → Pages → Deploy from a branch → main → / (root)**.
+La fuente de publicación se configura en **Settings → Pages → Source → GitHub Actions**.
 
 ### Próximas iteraciones
 
@@ -79,11 +77,11 @@ Open `http://localhost:4173`.
 
 ### Deployment
 
-The repository is structured for GitHub Pages from the `main` branch and repository root.
+GitHub Actions publishes the site to GitHub Pages on every push to `main`. The workflow also supports manual runs.
 
 **Live site URL:** https://santiagocsm.github.io/alternative_portfolio/
 
-If GitHub Pages has not been enabled yet, select **Settings → Pages → Deploy from a branch → main → / (root)**.
+Configure the publishing source under **Settings → Pages → Source → GitHub Actions**.
 
 ### Roadmap
 
