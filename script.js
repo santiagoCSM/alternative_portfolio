@@ -93,14 +93,37 @@
   updateCurrentProject();
   document.querySelector("#project-count").textContent = String(grid.querySelectorAll(".project").length).padStart(2, "0");
   document.querySelector("#year").textContent = new Date().getFullYear();
-  const items = [...document.querySelectorAll(".reveal")];
-  if ("IntersectionObserver" in window && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+  if ("IntersectionObserver" in window && typeof Element.prototype.animate === "function" && !motion.matches) {
+    const revealEasing = "cubic-bezier(.42, 0, .34, 1)";
+    const revealInset = 48;
     const observer = new IntersectionObserver(entries => {
-      for (const entry of entries) if (entry.isIntersecting) { entry.target.classList.add("visible"); observer.unobserve(entry.target); }
-    }, { threshold: 0.08 });
-    items.forEach(item => observer.observe(item));
-  } else {
-    items.forEach(item => item.classList.add("visible"));
+      for (const { target, isIntersecting } of entries) {
+        if (!isIntersecting) continue;
+        target.classList.remove("awaiting-reveal");
+        observer.unobserve(target);
+        if (!motion.matches && !grid.classList.contains("list-mode") && !target.matches(":target, :focus-within")) {
+          target.querySelector(".project-visual").animate(
+            [
+              { opacity: 0, transform: "translateY(14px)" },
+              { opacity: 1, transform: "none" }
+            ],
+            { duration: 1150, easing: revealEasing }
+          );
+          target.querySelector(".project-info").animate(
+            [
+              { opacity: 0, transform: "translateY(8px)" },
+              { opacity: 1, transform: "none" }
+            ],
+            { duration: 900, delay: 140, easing: revealEasing, fill: "backwards" }
+          );
+        }
+      }
+    }, { rootMargin: `0px 0px -${revealInset}px` });
+    for (const project of grid.querySelectorAll(".reveal")) {
+      if (project.getBoundingClientRect().top < window.innerHeight - revealInset) continue;
+      project.classList.add("awaiting-reveal");
+      observer.observe(project);
+    }
   }
 
   // Ajuste final según el ancho disponible: evita títulos recortados.
