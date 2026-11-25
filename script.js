@@ -23,4 +23,30 @@
   } else {
     items.forEach(item => item.classList.add("visible"));
   }
+
+  // The longest headline line sets a safe common font size for the entire hero.
+  // Recompute after web fonts load and on resize so no word is clipped.
+  const heroTitle = document.querySelector("#hero-title");
+  if (heroTitle) {
+    const fitHero = () => {
+      heroTitle.style.removeProperty("font-size");
+      const baseSize = parseFloat(getComputedStyle(heroTitle).fontSize);
+      let ratio = 1;
+      for (const line of heroTitle.querySelectorAll(".hero-line")) {
+        const text = line.querySelector(".hero-line-inner");
+        if (!text) continue;
+        const style = getComputedStyle(line);
+        const available = line.clientWidth
+          - parseFloat(style.paddingLeft)
+          - parseFloat(style.paddingRight)
+          - 4;
+        const width = text.getBoundingClientRect().width;
+        if (width > 0 && available > 0) ratio = Math.min(ratio, available / width);
+      }
+      if (ratio < 1) heroTitle.style.fontSize = (baseSize * ratio * .98).toFixed(2) + "px";
+    };
+    fitHero();
+    window.addEventListener("resize", fitHero, { passive: true });
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitHero);
+  }
 })();
