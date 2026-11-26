@@ -56,10 +56,24 @@
 
   const mobilePreview = window.matchMedia("(max-width: 650px)");
   const previewThreshold = 0.35;
+  const projectTrack = grid.closest(".project-track");
+  const workLayout = projectTrack.closest(".work-layout");
+  const projects = [...grid.querySelectorAll(".project")];
+  const indexLinks = [...document.querySelectorAll(".work-index a")];
+  const sceneControls = grid.querySelector(".scene-controls");
+  const scenePosition = grid.querySelector(".scene-position");
+  const sceneButtons = [...sceneControls.querySelectorAll("button")];
+  const shortViewport = window.matchMedia("(max-height: 450px)");
+  const lastProject = projects.length - 1;
+  let sceneIndex = -1;
+  let sceneFrame = null;
+  let displayedPosition = null;
+  let previousSceneTime = null;
   const videos = [...grid.querySelectorAll("video")];
   const playButtons = new Map(videos.map(video => [video, video.closest(".project-media").querySelector(".preview-play")]));
   const visibleVideos = new Set();
   const failedWebm = new WeakSet();
+  let sceneVisible = false;
   let previewsEnabled = true;
   let activePreview = null;
 
@@ -84,8 +98,10 @@
     const list = grid.classList.contains("list-mode");
     videoToggle.hidden = list || motion.matches || !("IntersectionObserver" in window);
     videoToggle.setAttribute("aria-pressed", String(enabled));
+    const candidates = sceneIndex < 0 ? videos : [videos[sceneIndex]];
     activePreview = enabled && !list && !document.hidden
-      ? videos.find(video => visibleVideos.has(video) && (!video.error || video.getAttribute("src") !== sourceFor(video))) ?? null
+      ? candidates.find(video => (sceneIndex < 0 ? visibleVideos.has(video) : sceneVisible) &&
+        (!video.error || video.getAttribute("src") !== sourceFor(video))) ?? null
       : null;
     for (const video of videos) {
       if (video === activePreview) continue;
@@ -108,11 +124,13 @@
   if ("IntersectionObserver" in window) {
     const previewObserver = new IntersectionObserver(entries => {
       for (const { target, intersectionRatio } of entries) {
-        if (intersectionRatio >= previewThreshold) visibleVideos.add(target);
+        if (target === grid) sceneVisible = intersectionRatio >= previewThreshold;
+        else if (intersectionRatio >= previewThreshold) visibleVideos.add(target);
         else visibleVideos.delete(target);
       }
       updatePreviews();
     }, { threshold: previewThreshold });
+    previewObserver.observe(grid);
     for (const video of videos) {
       video.muted = true;
       video.playsInline = true;
@@ -147,68 +165,146 @@
   }
   updatePreviews();
 
-  function cancelReveals() {
-    for (const animation of grid.getAnimations?.({ subtree: true }) ?? []) {
-      if (animation.id === "project-reveal") animation.cancel();
+  function markCurrentProject() {
+    const hash = sceneIndex < 0 ? location.hash : `#${projects[sceneIndex].id}`;
+    for (const link of indexLinks) {
+      if (link.hash === hash) link.setAttribute("aria-current", "location");
+      else link.removeAttribute("aria-current");
     }
   }
-  motion.addEventListener("change", () => {
-    if (motion.matches) cancelReveals();
-  });
+
+  function sceneGeometry() {
+    return {
+      top: parseFloat(getComputedStyle(grid).top),
+      travel: projectTrack.offsetHeight - grid.offsetHeight
+    };
+  }
+
+  function renderScene(time) {
+    sceneFrame = null;
+    const { top, travel } = sceneGeometry();
+    const progress = Math.min(1, Math.max(0, (top - projectTrack.getBoundingClientRect().top) / travel));
+    const target = progress * lastProject;
+    const elapsed = previousSceneTime === null ? 16 : Math.min(time - previousSceneTime, 50);
+    const blend = 1 - Math.exp(-elapsed / 95);
+    const gap = target - (displayedPosition ?? target);
+    if (Math.abs(gap) < .002) {
+      displayedPosition = target;
+      previousSceneTime = null;
+    } else {
+      displayedPosition += gap * blend;
+      previousSceneTime = time;
+      scheduleScene();
+    }
+    const position = displayedPosition;
+    const nextIndex = Math.round(position);
+    const shift = mobilePreview.matches ? 61 : 76;
+
+    for (const [index, project] of projects.entries()) {
+      const distance = index - position;
+      const depth = Math.abs(distance);
+      const side = index % 2 === 0 ? 1 : -1;
+      const x = distance * shift;
+      const z = distance < 0 ? distance * -160 : distance * -410;
+      project.style.setProperty("--plane-transform", `translate3d(${x}%, ${side * Math.min(depth * 5, 9)}%, ${z}px) rotateY(${distance * -18}deg)`);
+      project.style.setProperty("--plane-opacity", Math.max(0, 1 - depth * (distance < 0 ? 1.12 : .62)));
+    }
+
+    if (nextIndex === sceneIndex) return;
+    if (projects[sceneIndex]?.contains(document.activeElement)) {
+      sceneButtons[1].focus({ preventScroll: true });
+    }
+    sceneIndex = nextIndex;
+    grid.dataset.sceneProject = nextIndex;
+    projects.forEach((project, index) => { project.inert = index !== nextIndex; });
+    scenePosition.textContent = `${String(nextIndex + 1).padStart(2, "0")} / ${String(projects.length).padStart(2, "0")}`;
+    sceneButtons[0].setAttribute("aria-disabled", String(nextIndex === 0));
+    sceneButtons[1].setAttribute("aria-disabled", String(nextIndex === lastProject));
+    markCurrentProject();
+    updatePreviews();
+  }
+
+  function scheduleScene() {
+    if (sceneFrame === null) sceneFrame = requestAnimationFrame(renderScene);
+  }
+
+  function syncGalleryMotion() {
+    const enabled = !motion.matches && !shortViewport.matches && !grid.classList.contains("list-mode");
+    workLayout.classList.toggle("scene-layout", enabled);
+    projectTrack.classList.toggle("scene-track", enabled);
+    sceneControls.hidden = !enabled;
+    if (enabled) {
+      window.addEventListener("scroll", scheduleScene, { passive: true });
+      window.addEventListener("resize", scheduleScene);
+      scheduleScene();
+    } else {
+      window.removeEventListener("scroll", scheduleScene);
+      window.removeEventListener("resize", scheduleScene);
+      if (sceneFrame !== null) cancelAnimationFrame(sceneFrame);
+      sceneFrame = null;
+      sceneIndex = -1;
+      displayedPosition = null;
+      previousSceneTime = null;
+      projects.forEach(project => { project.inert = false; });
+      markCurrentProject();
+      updatePreviews();
+    }
+  }
+
+  function goToProject(index, behavior) {
+    const { top, travel } = sceneGeometry();
+    window.scrollTo({
+      top: window.scrollY + projectTrack.getBoundingClientRect().top - top + travel * index / lastProject,
+      behavior
+    });
+  }
+
+  function openSceneProject(index) {
+    const hash = `#${projects[index].id}`;
+    if (location.hash !== hash) history.pushState(null, "", hash);
+    goToProject(index, "smooth");
+  }
+
+  function syncProjectHash() {
+    const index = projects.findIndex(project => `#${project.id}` === location.hash);
+    if (projectTrack.classList.contains("scene-track") && index >= 0) {
+      displayedPosition = null;
+      goToProject(index, "instant");
+      scheduleScene();
+    }
+    markCurrentProject();
+  }
+
+  indexLinks.forEach(link => link.addEventListener("click", event => {
+    if (sceneIndex < 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const index = projects.findIndex(project => `#${project.id}` === link.hash);
+    if (index < 0) return;
+    event.preventDefault();
+    openSceneProject(index);
+  }));
+  sceneButtons.forEach(button => button.addEventListener("click", () => {
+    if (button.getAttribute("aria-disabled") !== "true") {
+      openSceneProject(sceneIndex + Number(button.dataset.sceneStep));
+    }
+  }));
+  motion.addEventListener("change", syncGalleryMotion);
+  shortViewport.addEventListener("change", syncGalleryMotion);
+  window.addEventListener("hashchange", syncProjectHash);
+  window.addEventListener("load", syncProjectHash, { once: true });
+  projectTrack.style.setProperty("--scene-steps", lastProject);
+  projects.forEach((project, index) => project.style.setProperty("--plane-order", projects.length - index));
+  syncGalleryMotion();
 
   function setView(view) {
     const list = view === "list";
     grid.classList.toggle("list-mode", list);
-    if (list) cancelReveals();
+    syncGalleryMotion();
     for (const button of buttons) {
       button.setAttribute("aria-pressed", String(button.dataset.view === view));
     }
     updatePreviews();
   }
   buttons.forEach(button => button.addEventListener("click", () => setView(button.dataset.view)));
-  const indexLinks = [...document.querySelectorAll(".work-index a")];
-  const updateCurrentProject = () => {
-    for (const link of indexLinks) {
-      if (link.hash === window.location.hash) link.setAttribute("aria-current", "location");
-      else link.removeAttribute("aria-current");
-    }
-  };
-  window.addEventListener("hashchange", updateCurrentProject);
-  updateCurrentProject();
-  document.querySelector("#project-count").textContent = String(grid.querySelectorAll(".project").length).padStart(2, "0");
+  document.querySelector("#project-count").textContent = String(projects.length).padStart(2, "0");
   document.querySelector("#year").textContent = new Date().getFullYear();
-  if ("IntersectionObserver" in window && typeof Element.prototype.animate === "function" && !motion.matches) {
-    const revealEasing = "cubic-bezier(.42, 0, .34, 1)";
-    const revealInset = 48;
-    const observer = new IntersectionObserver(entries => {
-      for (const { target, isIntersecting } of entries) {
-        if (!isIntersecting) {
-          target.classList.add("awaiting-reveal");
-          continue;
-        }
-        const wasPending = target.classList.contains("awaiting-reveal");
-        target.classList.remove("awaiting-reveal");
-        observer.unobserve(target);
-        if (wasPending && !motion.matches && !grid.classList.contains("list-mode") && !target.matches(":target, :focus-within")) {
-          target.querySelector(".project-visual").animate(
-            [
-              { opacity: 0, transform: "translateY(14px)" },
-              { opacity: 1, transform: "none" }
-            ],
-            { id: "project-reveal", duration: 1150, easing: revealEasing }
-          );
-          target.querySelector(".project-info").animate(
-            [
-              { opacity: 0, transform: "translateY(8px)" },
-              { opacity: 1, transform: "none" }
-            ],
-            { id: "project-reveal", duration: 900, delay: 140, easing: revealEasing, fill: "backwards" }
-          );
-        }
-      }
-    }, { rootMargin: `0px 0px -${revealInset}px` });
-    for (const project of grid.querySelectorAll(".reveal")) {
-      observer.observe(project);
-    }
-  }
 })();
