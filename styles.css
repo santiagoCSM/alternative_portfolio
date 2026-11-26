@@ -74,17 +74,35 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
 .hero h1 { margin: 0; width: 100%; font-size: clamp(90px, 9vw, 160px); font-weight: 600; letter-spacing: -.085em; line-height: .95; }
 .hero-line { display: block; overflow: hidden; padding: .07em 0 .12em; margin: -.07em 0 -.12em; white-space: nowrap; }
 .hero-line-indented { padding-left: 14%; }
-.hero-line-inner { display: inline-block; white-space: nowrap; animation: title-enter .55s cubic-bezier(.22, 1, .36, 1) backwards; }
-.hero-line:nth-child(2) .hero-line-inner { animation-delay: .06s; }
-.hero-line:nth-child(3) .hero-line-inner { animation-delay: .12s; }
+.hero-line-inner { display: inline-block; white-space: nowrap; animation: title-enter 1.15s ease-out backwards; }
+.hero-line:nth-child(2) .hero-line-inner { animation-delay: .15s; }
+.hero-line:nth-child(3) .hero-line-inner { animation-delay: .3s; }
 .outlined { color: transparent; -webkit-text-stroke: clamp(1px, .13vw, 2px) var(--ink); }
 .hero-sub { display: flex; flex-direction: column; align-items: start; gap: 22px; }
 .hero-sub p { max-width: 460px; margin: 0; font-weight: 500; font-size: clamp(13px, 1.5vw, 21px); line-height: 1.35; text-wrap: pretty; }
 .hero-symbol { width: clamp(56px, 8vw, 100px); aspect-ratio: 1; flex: 0 0 auto; display: grid; place-items: center; border-radius: 50%; background: var(--ink); }
 .hero-symbol span { height: 100%; width: 50%; border-inline: 4px solid var(--paper); transform: rotate(42deg); }
+@media (prefers-reduced-motion: no-preference) {
+  .hero-symbol span { animation: symbol-enter .65s cubic-bezier(.22, 1, .36, 1) .12s backwards; }
+  @supports (animation-timeline: scroll(root block)) and (animation-range: 0px 420px) {
+    .hero-symbol {
+      animation: symbol-scroll linear both;
+      animation-timeline: scroll(root block);
+      animation-range: 0px 420px;
+    }
+  }
+}
+@keyframes symbol-enter {
+  from { transform: rotate(-18deg) scaleX(.65); }
+  to { transform: rotate(42deg) scaleX(1); }
+}
+@keyframes symbol-scroll {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(38deg); }
+}
 .hero-bottom { align-items: center; border-top: 1px solid var(--rule); padding-top: 12px; }
 .hero-bottom a { text-decoration: underline; text-underline-offset: .3em; }
-@keyframes title-enter { from { opacity: .65; transform: translateY(9%); } }
+@keyframes title-enter { from { opacity: .3; transform: translateY(15%); } }
 
 /* Encabezados de secciones */
 .section { padding: clamp(90px, 10vw, 180px) var(--gutter) 0; }
