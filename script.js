@@ -33,7 +33,7 @@
   function updateSymbolRotation() {
     symbolFrame = null;
     const progress = Math.min(1, Math.max(0, window.scrollY / 420));
-    heroSymbol.style.setProperty("--symbol-rotation", `${progress * 38}deg`);
+    heroSymbol.style.setProperty("--symbol-rotation", `${progress * 240}deg`);
   }
 
   function scheduleSymbolRotation() {
